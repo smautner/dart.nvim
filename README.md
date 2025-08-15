@@ -8,6 +8,23 @@ The philosophy is roughly:
   - These do not need to be tracked long-term, but jumping back to the n-th previous buffer can be helpful.
 - The tabline is the best place to display these marked files; being constantly in-view means you can more quickly memorize mark -> file mappings to reduce mental overhead, instead of being hidden behind a picker, list, or keymap.
 
+![large.png](https://github.com/user-attachments/assets/5ca4bb2f-ef67-4c75-8b2c-68904ede875c)
+
+
+## Showcase
+
+Buffers open show in the tabline up to the length of `buflist` (default 3):
+
+![3-buffers.png](https://github.com/user-attachments/assets/da0a595b-9779-4eea-8845-2af2a54092e2)
+
+
+Opening a new buffer shifts buffers left and pops the rightmost buffer off of the tabline:
+![3-buffers-new.png](https://github.com/user-attachments/assets/92559642-d1a5-4e2a-96a9-141c3e592856)
+
+A buffer can be pinned using `;;` to add it to the `marklist` and display it regardless of the `buflist`
+![4-buffers.png](https://github.com/user-attachments/assets/ee58370a-1856-4c70-9ba1-b065baaf4a5f)
+
+
 ## Features
 
 ⦿  Minimal tabline inspired by `mini.tabline`
