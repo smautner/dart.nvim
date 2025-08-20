@@ -13,12 +13,12 @@ The philosophy is roughly:
 
 ## Showcase
 
-Buffers open show in the tabline up to the length of `buflist` (default 3):
+Buffers show in the tabline up to the length of `buflist` (default 3) as they are opened:
 
 ![3-buffers.png](https://github.com/user-attachments/assets/da0a595b-9779-4eea-8845-2af2a54092e2)
 
 
-Opening a new buffer shifts buffers left and pops the rightmost buffer off of the tabline:
+Opening a new buffer shifts buffers right, and pops the rightmost buffer off of the tabline:
 ![3-buffers-new.png](https://github.com/user-attachments/assets/92559642-d1a5-4e2a-96a9-141c3e592856)
 
 A buffer can be pinned using `;;` to add it to the `marklist` and display it regardless of the `buflist`
@@ -29,7 +29,7 @@ A buffer can be pinned using `;;` to add it to the `marklist` and display it reg
 
 ⦿  Minimal tabline inspired by `mini.tabline`
 
-⦿  Mark open buffers to pin them to the tabline
+⦿  Mark open buffers to pin them to the tabline. _This is separate from Vim's marks/global marks._
 
 ⦿  Unmarked buffers will be listed in the `buflist` and sorted by most-recently-visited
 
@@ -76,6 +76,7 @@ A buffer can be pinned using `;;` to add it to the `marklist` and display it reg
   },
 
   -- Default mappings
+  -- Set an individual mapping to an empty string to disable,
   mappings = {
     mark = ';;', -- Mark current buffer
     jump = ';', -- Jump to buffer marked by next character i.e `;a`
