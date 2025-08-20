@@ -110,11 +110,20 @@ M.create_autocommands = function()
 end
 
 -- Use Mini Tabline for default highlights, since it's well supported by many colorschemes
--- override the foreground for labels to be more visible
+-- Override the foreground for labels to be more visible
+-- If mini is not present, fallback on TabLine highlight groups
 M.create_default_hl = function()
   local set_default_hl = function(name, opts)
     opts.default = true
     vim.api.nvim_set_hl(0, name, opts)
+  end
+
+  local mk_fallback_hl = function(group, fallback)
+    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group })
+    if ok and (hl.fg or hl.bg or hl.link) then
+      return group
+    end
+    return fallback
   end
 
   local override_label = function(hl, link)
@@ -122,27 +131,32 @@ M.create_default_hl = function()
     vim.api.nvim_set_hl(0, hl, { bg = prev.bg or '', fg = 'orange', bold = true, default = true })
   end
 
+  local current = mk_fallback_hl('MiniTablineCurrent', 'TabLineSel')
+  local current_modified = mk_fallback_hl('MiniTablineModifiedCurrent', 'StatusLine')
+  local visible = mk_fallback_hl('MiniTablineVisible', 'TabLine')
+  local visible_modified = mk_fallback_hl('MiniTablineModifiedVisible', 'StatusLine')
+  local fill = mk_fallback_hl('MiniTablineFill', 'Normal')
+
   -- Current selection
-  set_default_hl('DartCurrent', { link = 'MiniTablineCurrent' })
-  override_label('DartCurrentLabel', 'MiniTablineCurrent')
+  set_default_hl('DartCurrent', { link = current })
+  override_label('DartCurrentLabel', current)
 
   -- Current selection if modified
-  set_default_hl('DartCurrentModified', { link = 'MiniTablineModifiedCurrent' })
-  override_label('DartCurrentLabelModified', 'MiniTablineModifiedCurrent')
+  set_default_hl('DartCurrentModified', { link = current_modified })
+  override_label('DartCurrentLabelModified', current_modified)
 
   -- Visible but not selected
-  set_default_hl('DartVisible', { link = 'MiniTablineVisible' })
-  override_label('DartVisibleLabel', 'MiniTablineVisible')
+  set_default_hl('DartVisible', { link = visible })
+  override_label('DartVisibleLabel', visible)
 
   -- Visible and modified but not selected
-  set_default_hl('DartVisibleModified', { link = 'MiniTablineModifiedVisible' })
-  override_label('DartVisibleLabelModified', 'MiniTablineModifiedVisible')
+  set_default_hl('DartVisibleModified', { link = visible_modified })
+  override_label('DartVisibleLabelModified', visible_modified)
 
   -- Fill
-  set_default_hl('DartFill', { link = 'MiniTablineFill' })
+  set_default_hl('DartFill', { link = fill })
 
   -- Pick
-  set_default_hl('DartPickLabel', { link = 'Normal' })
   override_label('DartPickLabel', 'Normal')
 end
 
