@@ -119,7 +119,7 @@ M.create_default_hl = function()
 
   local override_label = function(hl, link)
     local prev = vim.api.nvim_get_hl(0, { name = link })
-    vim.api.nvim_set_hl(0, hl, { bg = prev.bg or "", fg = "orange", bold = true })
+    vim.api.nvim_set_hl(0, hl, { bg = prev.bg or "", fg = "orange", bold = true, default = true})
   end
 
   -- Current selection
