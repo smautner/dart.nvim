@@ -1,4 +1,5 @@
 # dart.nvim - a minimalist tabline focused on pinning buffers
+[![CI](https://github.com/iofq/dart.nvim/actions/workflows/main.yaml/badge.svg)](https://github.com/iofq/dart.nvim/actions/workflows/main.yaml)
 
 dart.nvim is a minimalist tabline focused on pinning buffers for fast switching between a group of files. Pick a file and throw a single-character dart to jump to it.
 

@@ -1,0 +1,32 @@
+name: CI
+permissions:
+  contents: read
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    name: Check lua formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - run: nix develop --command "stylua" "--check" "."
+  build:
+    name: Nix build on ${{ matrix.os }}
+    needs: lint
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+
+      - run: nix flake check
+      - run: nix develop --command "stylua" "--version"
+      - run: nix build .
