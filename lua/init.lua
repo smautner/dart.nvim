@@ -20,11 +20,11 @@ end
 M.config = {
   -- list of characters to use to mark 'pinned' buffers
   -- the characters will be chosen for new pins in order
-  marklist = { "a", "s", "d", "f", "q", "w", "e", "r" },
+  marklist = { 'a', 's', 'd', 'f', 'q', 'w', 'e', 'r' },
 
   -- list of characters to use to mark recent buffers
   -- we track the last #buflist opened buffers to display on the left side of the tabline
-  buflist = { "z", "x", "c" },
+  buflist = { 'z', 'x', 'c' },
 
   -- If true, Dart.next and Dart.prev will wrap around the tabline
   cycle_wraps_around = true,
@@ -32,26 +32,26 @@ M.config = {
   -- state persist. use Dart.read_session and Dart.write_session manually
   persist = {
     -- data path to persist session data
-    path = vim.fs.joinpath(vim.fn.stdpath("data"), "dart"),
+    path = vim.fs.joinpath(vim.fn.stdpath('data'), 'dart'),
   },
 
   mappings = {
-    mark = ";;",
-    jump = ";",
-    pick = ";p",
-    next = "<S-l>",
-    prev = "<S-h>",
+    mark = ';;',
+    jump = ';',
+    pick = ';p',
+    next = '<S-l>',
+    prev = '<S-h>',
   },
 }
 
 M.setup_config = function(config)
-  M.config = vim.tbl_deep_extend("force", M.config, config or {})
+  M.config = vim.tbl_deep_extend('force', M.config, config or {})
   return M.config
 end
 
 M.apply_config = function(config)
   if vim.fn.isdirectory(M.config.persist.path) == 0 then
-    vim.fn.mkdir(M.config.persist.path, "p")
+    vim.fn.mkdir(M.config.persist.path, 'p')
   end
 
   -- build list of all marks (buf + pin) to sort tabline by
@@ -61,31 +61,31 @@ M.apply_config = function(config)
   end
 
   vim.opt.showtabline = 2
-  vim.opt.tabline = "%!v:lua.Dart.gen_tabline()"
+  vim.opt.tabline = '%!v:lua.Dart.gen_tabline()'
 
   -- setup keymaps
   local function map(mode, lhs, rhs, opts)
-    if lhs == "" then
+    if lhs == '' then
       return
     end
-    opts = vim.tbl_deep_extend("force", { silent = true }, opts or {})
+    opts = vim.tbl_deep_extend('force', { silent = true }, opts or {})
     vim.keymap.set(mode, lhs, rhs, opts)
   end
 
-  map("n", config.mappings.mark, Dart.mark, { desc = "Dart: mark current buffer" })
-  map("n", config.mappings.jump, function()
+  map('n', config.mappings.mark, Dart.mark, { desc = 'Dart: mark current buffer' })
+  map('n', config.mappings.jump, function()
     Dart.jump(vim.fn.getcharstr())
-  end, { desc = "Dart: jump to buffer" })
-  map("n", config.mappings.pick, Dart.pick, { desc = "Dart: pick buffer" })
-  map("n", config.mappings.next, Dart.next, { desc = "Dart: next buffer" })
-  map("n", config.mappings.prev, Dart.prev, { desc = "Dart: prev buffer" })
+  end, { desc = 'Dart: jump to buffer' })
+  map('n', config.mappings.pick, Dart.pick, { desc = 'Dart: pick buffer' })
+  map('n', config.mappings.next, Dart.next, { desc = 'Dart: next buffer' })
+  map('n', config.mappings.prev, Dart.prev, { desc = 'Dart: prev buffer' })
 end
 
 M.create_autocommands = function()
-  local group = vim.api.nvim_create_augroup("Dart", {})
+  local group = vim.api.nvim_create_augroup('Dart', {})
 
   -- cleanup deleted buffers
-  vim.api.nvim_create_autocmd("BufDelete", {
+  vim.api.nvim_create_autocmd('BufDelete', {
     group = group,
     callback = function(args)
       M.del_by_filename(vim.api.nvim_buf_get_name(args.buf))
@@ -93,7 +93,7 @@ M.create_autocommands = function()
   })
 
   -- track last n opened buffers
-  vim.api.nvim_create_autocmd({ "BufWinEnter", "BufAdd" }, {
+  vim.api.nvim_create_autocmd({ 'BufWinEnter', 'BufAdd' }, {
     group = group,
     callback = function(args)
       M.shift_buflist(vim.api.nvim_buf_get_name(args.buf))
@@ -119,36 +119,36 @@ M.create_default_hl = function()
 
   local override_label = function(hl, link)
     local prev = vim.api.nvim_get_hl(0, { name = link })
-    vim.api.nvim_set_hl(0, hl, { bg = prev.bg or "", fg = "orange", bold = true, default = true})
+    vim.api.nvim_set_hl(0, hl, { bg = prev.bg or '', fg = 'orange', bold = true, default = true })
   end
 
   -- Current selection
-  set_default_hl("DartCurrent", { link = "MiniTablineCurrent" })
-  override_label("DartCurrentLabel", "MiniTablineCurrent")
+  set_default_hl('DartCurrent', { link = 'MiniTablineCurrent' })
+  override_label('DartCurrentLabel', 'MiniTablineCurrent')
 
   -- Current selection if modified
-  set_default_hl("DartCurrentModified", { link = "MiniTablineModifiedCurrent" })
-  override_label("DartCurrentLabelModified", "MiniTablineModifiedCurrent")
+  set_default_hl('DartCurrentModified', { link = 'MiniTablineModifiedCurrent' })
+  override_label('DartCurrentLabelModified', 'MiniTablineModifiedCurrent')
 
   -- Visible but not selected
-  set_default_hl("DartVisible", { link = "MiniTablineVisible" })
-  override_label("DartVisibleLabel", "MiniTablineVisible")
+  set_default_hl('DartVisible', { link = 'MiniTablineVisible' })
+  override_label('DartVisibleLabel', 'MiniTablineVisible')
 
   -- Visible and modified but not selected
-  set_default_hl("DartVisibleModified", { link = "MiniTablineModifiedVisible" })
-  override_label("DartVisibleLabelModified", "MiniTablineModifiedVisible")
+  set_default_hl('DartVisibleModified', { link = 'MiniTablineModifiedVisible' })
+  override_label('DartVisibleLabelModified', 'MiniTablineModifiedVisible')
 
   -- Fill
-  set_default_hl("DartFill", { link = "MiniTablineFill" })
+  set_default_hl('DartFill', { link = 'MiniTablineFill' })
 
   -- Pick
-  set_default_hl("DartPickLabel", { link = "Normal" })
-  override_label("DartPickLabel", "Normal")
+  set_default_hl('DartPickLabel', { link = 'Normal' })
+  override_label('DartPickLabel', 'Normal')
 end
 
 M.write_json = function(path, tbl)
   local ok, _ = pcall(function()
-    local fd = assert(vim.uv.fs_open(path, "w", 438)) -- 438 = 0666
+    local fd = assert(vim.uv.fs_open(path, 'w', 438)) -- 438 = 0666
     assert(vim.uv.fs_write(fd, vim.json.encode(tbl)))
     assert(vim.uv.fs_close(fd))
   end)
@@ -157,7 +157,7 @@ end
 
 M.read_json = function(path)
   local ok, content = pcall(function()
-    local fd = assert(vim.uv.fs_open(path, "r", 438)) -- 438 = 0666
+    local fd = assert(vim.uv.fs_open(path, 'r', 438)) -- 438 = 0666
     local stat = assert(vim.uv.fs_fstat(fd))
     local data = assert(vim.uv.fs_read(fd, stat.size, 0))
     assert(vim.uv.fs_close(fd))
@@ -167,7 +167,7 @@ M.read_json = function(path)
 end
 
 M.read_session = function(session)
-  local filename = session .. ".json"
+  local filename = session .. '.json'
   local path = vim.fs.joinpath(M.config.persist.path, filename)
   local content = M.read_json(path)
   if content ~= nil then
@@ -176,7 +176,7 @@ M.read_session = function(session)
 end
 
 M.write_session = function(session)
-  local path = vim.fs.joinpath(M.config.persist.path, session .. ".json")
+  local path = vim.fs.joinpath(M.config.persist.path, session .. '.json')
   M.write_json(path, M.state)
 end
 
@@ -189,11 +189,11 @@ M.get_state_by_field = function(field, value)
 end
 
 M.state_from_mark = function(mark)
-  return M.get_state_by_field("mark", mark)
+  return M.get_state_by_field('mark', mark)
 end
 
 M.state_from_filename = function(mark)
-  return M.get_state_by_field("filename", mark)
+  return M.get_state_by_field('filename', mark)
 end
 
 M.del_by_filename = function(filename)
@@ -214,10 +214,10 @@ end
 
 M.should_show = function(filename)
   local bufnr = M.get_bufnr(filename)
-  return vim.api.nvim_buf_is_valid(bufnr)    -- buffer exists and is loaded
-      and vim.bo[bufnr].buflisted            -- don't show hidden buffers
-      and vim.bo[bufnr].buftype == ""        -- don't show pickers, prompts, etc.
-      and vim.api.nvim_buf_get_name(bufnr) ~= "" -- don't show unnamed files
+  return vim.api.nvim_buf_is_valid(bufnr) -- buffer exists and is loaded
+    and vim.bo[bufnr].buflisted -- don't show hidden buffers
+    and vim.bo[bufnr].buftype == '' -- don't show pickers, prompts, etc.
+    and vim.api.nvim_buf_get_name(bufnr) ~= '' -- don't show unnamed files
 end
 
 M.next_unused_mark = function()
@@ -226,7 +226,7 @@ M.next_unused_mark = function()
       return m
     end
   end
-  return "Z"
+  return 'Z'
 end
 
 M.shift_buflist = function(filename)
@@ -270,23 +270,23 @@ M.cycle_tabline = function(direction)
 end
 
 M.gen_tabpage = function()
-  local n_tabpages = vim.fn.tabpagenr("$")
+  local n_tabpages = vim.fn.tabpagenr('$')
   if n_tabpages == 1 then
-    return ""
+    return ''
   end
-  return string.format("%%= Tab %d/%d ", vim.fn.tabpagenr(), n_tabpages)
+  return string.format('%%= Tab %d/%d ', vim.fn.tabpagenr(), n_tabpages)
 end
 
 M.gen_tabline_item = function(item, cur, bufnr)
   local is_current = bufnr == cur
 
-  local filename = vim.fn.fnamemodify(item.filename, ":t")
-  local modified = vim.bo[bufnr].modified and "Modified" or ""
+  local filename = vim.fn.fnamemodify(item.filename, ':t')
+  local modified = vim.bo[bufnr].modified and 'Modified' or ''
 
-  local hl_label = is_current and "DartCurrentLabel" or "DartVisibleLabel"
-  local label = item.mark ~= "" and item.mark .. " " or ""
-  local hl = is_current and "DartCurrent" or "DartVisible"
-  local content = filename ~= "" and filename or "*"
+  local hl_label = is_current and 'DartCurrentLabel' or 'DartVisibleLabel'
+  local label = item.mark ~= '' and item.mark .. ' ' or ''
+  local hl = is_current and 'DartCurrent' or 'DartVisible'
+  local content = filename ~= '' and filename or '*'
 
   return {
     bufnr = bufnr,
@@ -298,8 +298,8 @@ M.gen_tabline_item = function(item, cur, bufnr)
 end
 
 M.format_tabline_item = function(ref)
-  local click = string.format("%%%s@SwitchBuffer@", ref.bufnr)
-  return string.format("%%#%s#%s %s%%#%s#%s %%X", ref.hl_label, click, ref.label, ref.hl, ref.content)
+  local click = string.format('%%%s@SwitchBuffer@', ref.bufnr)
+  return string.format('%%#%s#%s %s%%#%s#%s %%X', ref.hl_label, click, ref.label, ref.hl, ref.content)
 end
 
 M.truncate_tabline = function(items, center, columns)
@@ -312,9 +312,9 @@ M.truncate_tabline = function(items, center, columns)
   local function width(tabline)
     return vim.api.nvim_strwidth(table.concat(
       vim.tbl_map(function(m)
-        return string.format(" %s %s ", m.label, m.content)
+        return string.format(' %s %s ', m.label, m.content)
       end, tabline),
-      ""
+      ''
     )) + 3 -- save room for trunc
   end
 
@@ -346,14 +346,14 @@ M.truncate_tabline = function(items, center, columns)
     end
   end
 
-  return (trunc_left and "%#DartVisibleLabel# < " or "")
-      .. table.concat(
-        vim.tbl_map(function(n)
-          return M.format_tabline_item(n)
-        end, result),
-        ""
-      )
-      .. (trunc_right and "%#DartVisibleLabel# > " or "")
+  return (trunc_left and '%#DartVisibleLabel# < ' or '')
+    .. table.concat(
+      vim.tbl_map(function(n)
+        return M.format_tabline_item(n)
+      end, result),
+      ''
+    )
+    .. (trunc_right and '%#DartVisibleLabel# > ' or '')
 end
 
 M.mark = function(bufnr, mark)
@@ -373,12 +373,12 @@ M.mark = function(bufnr, mark)
   if not exists then
     table.insert(M.state, {
       mark = mark,
-      filename = vim.fn.fnamemodify(filename, ":p"),
+      filename = vim.fn.fnamemodify(filename, ':p'),
     })
   elseif vim.tbl_contains(M.config.buflist, exists.mark) then
     exists.mark = mark -- allow for re-marking buffers in the buflist
   else
-    return           -- skip sort if no change
+    return -- skip sort if no change
   end
   table.sort(M.state, function(a, b)
     return (M.order[a.mark] or 998) < (M.order[b.mark] or 999)
@@ -403,25 +403,25 @@ end
 
 Dart.pick = function()
   local buf = vim.api.nvim_create_buf(false, true)
-  local ns = vim.api.nvim_create_namespace("dart_pick")
-  local prompt = { "Jump to buffer:" }
+  local ns = vim.api.nvim_create_namespace('dart_pick')
+  local prompt = { 'Jump to buffer:' }
   local row_len = #prompt[1]
 
   -- close window on esc and pick mapping
-  for _, map in ipairs({ "<Esc>", M.config.mappings.pick }) do
-    vim.keymap.set("n", map, function()
+  for _, map in ipairs { '<Esc>', M.config.mappings.pick } do
+    vim.keymap.set('n', map, function()
       vim.api.nvim_win_close(0, true)
     end, { buffer = buf, nowait = true, silent = true })
   end
 
   for _, mark in ipairs(M.state) do
     -- map each mark to jump
-    vim.keymap.set("n", mark.mark, function()
+    vim.keymap.set('n', mark.mark, function()
       vim.api.nvim_win_close(0, true)
       Dart.jump(mark.mark)
     end, { buffer = buf, nowait = true, silent = true })
 
-    local entry = string.format("  %s → %s", mark.mark, vim.fn.fnamemodify(mark.filename, ":t"))
+    local entry = string.format('  %s → %s', mark.mark, vim.fn.fnamemodify(mark.filename, ':t'))
     if #entry > row_len then
       row_len = #entry
     end
@@ -432,23 +432,23 @@ Dart.pick = function()
   for i = 1, #prompt do
     vim.api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
       end_col = math.min(5, #prompt[i]),
-      hl_group = "DartPickLabel",
+      hl_group = 'DartPickLabel',
     })
   end
   vim.api.nvim_buf_set_extmark(buf, ns, 0, 0, {
     end_line = 1,
-    hl_group = "DartPickLabel",
+    hl_group = 'DartPickLabel',
   })
 
   vim.api.nvim_open_win(buf, true, {
-    relative = "editor",
+    relative = 'editor',
     width = row_len + 2,
     height = #M.state + 2,
     row = math.floor((vim.o.lines - (#M.state + 2)) / 2),
     col = math.floor((vim.o.columns - (row_len + 2)) / 2),
-    anchor = "NW",
-    style = "minimal",
-    border = "rounded",
+    anchor = 'NW',
+    style = 'minimal',
+    border = 'rounded',
     focusable = true,
   })
 end
@@ -479,7 +479,7 @@ Dart.gen_tabline = function()
   end
 
   local truncated = M.truncate_tabline(items, center, vim.o.columns)
-  return truncated .. "%X%#DartFill#" .. M.gen_tabpage()
+  return truncated .. '%X%#DartFill#' .. M.gen_tabpage()
 end
 
 return Dart
