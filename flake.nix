@@ -24,7 +24,7 @@
           inherit version;
           src = pkgs.lib.cleanSourceWith {
             src = ./.;
-            filter = path: type: (builtins.match ".*lua" (builtins.baseNameOf path) != null);
+            filter = path: type: type == "directory" || (builtins.match ".*lua" (builtins.baseNameOf path) != null);
           };
         };
         shell = pkgs.mkShell {
