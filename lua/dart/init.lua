@@ -8,7 +8,7 @@ Dart.setup = function(config)
   if M._setup then
     return
   end
-  config = M.setup_config(config)
+  config = M.setup_config(config or {})
   M.apply_config(config)
   M.create_autocommands()
   M.create_default_hl()
@@ -34,6 +34,30 @@ M.config = {
 
     -- If true, Dart.next and Dart.prev will wrap around the tabline
     cycle_wraps_around = true,
+
+    -- Function to determine the order mark/buflist items will be shown on the tabline
+    -- Should return a table with keys being the mark and values being integers,
+    -- e.g. { "a": 1, "b", 2 } would sort the "a" mark to the left of "b" on your tabline
+    order = function(config)
+      local order = {}
+      for i, key in ipairs(vim.list_extend(vim.deepcopy(config.buflist), config.marklist)) do
+        order[key] = i
+      end
+      return order
+    end,
+
+    -- Function to format a tabline item after the path is built
+    -- e.g. to add an icon
+    format_item = function(item)
+      local click = string.format('%%%s@SwitchBuffer@', item.bufnr)
+      return string.format('%%#%s#%s %s%%#%s#%s %%X', item.hl_label, click, item.label, item.hl, item.content)
+    end,
+  },
+
+  picker = {
+    -- argument to pass to vim.fn.fnamemodify `mods`, before displaying the file path in the picker
+    -- e.g. ":t" for the filename, ":p:." for relative path to cwd
+    path_format = ':t',
   },
 
   -- State persistence. Use Dart.read_session and Dart.write_session manually
@@ -55,18 +79,13 @@ M.config = {
 
 M.setup_config = function(config)
   M.config = vim.tbl_deep_extend('force', M.config, config or {})
+  Dart.config = M.config
   return M.config
 end
 
 M.apply_config = function(config)
   if vim.fn.isdirectory(M.config.persist.path) == 0 then
     vim.fn.mkdir(M.config.persist.path, 'p')
-  end
-
-  -- build list of all marks (buf + pin) to sort tabline by
-  M.order = {}
-  for i, key in ipairs(vim.list_extend(vim.deepcopy(config.buflist), config.marklist)) do
-    M.order[key] = i
   end
 
   -- setup keymaps
@@ -78,7 +97,7 @@ M.apply_config = function(config)
     vim.keymap.set(mode, lhs, rhs, opts)
   end
 
-  if M.config.always_show_tabline then
+  if M.config.tabline.always_show then
     M.init_tabline()
   end
 
@@ -308,7 +327,7 @@ M.cycle_tabline = function(direction)
   for i, m in ipairs(M.state) do
     if cur == M.get_bufnr(m.filename) then
       local next = ((i + direction - 1) % #M.state) + 1 -- wrap around list
-      if not M.config.cycle_wraps_around and (i + direction < 1 or i + direction > #M.state) then
+      if not M.config.tabline.cycle_wraps_around and (i + direction < 1 or i + direction > #M.state) then
         return
       end
       if M.state[next] then
@@ -351,9 +370,49 @@ M.gen_tabline_item = function(item, cur, bufnr)
   }
 end
 
-M.format_tabline_item = function(ref)
-  local click = string.format('%%%s@SwitchBuffer@', ref.bufnr)
-  return string.format('%%#%s#%s %s%%#%s#%s %%X', ref.hl_label, click, ref.label, ref.hl, ref.content)
+M.get_duplicate_paths = function(items)
+  local exists = {}
+  local result = {}
+  for _, item in ipairs(items) do
+    exists[item.content] = (exists[item.content] or 0) + 1
+    if exists[item.content] > 1 then
+      result[item.content] = true
+    end
+  end
+  return result
+end
+
+M.expand_paths = function(items)
+  local dupes = M.get_duplicate_paths(items)
+  local recurse = false
+
+  for _, item in ipairs(items) do
+    if dupes[item.content] then
+      item.content = M.add_parent_path(item)
+      recurse = true
+    end
+  end
+  if recurse then
+    return M.expand_paths(items)
+  else
+    return items
+  end
+end
+
+M.add_parent_path = function(item)
+  local sep = package.config:sub(1, 1)
+  local path = item.content
+  local full = vim.api.nvim_buf_get_name(item.bufnr)
+
+  local pattern_sep = sep == '\\' and '\\\\' or sep
+
+  local prefix = full:match('^(.*)' .. pattern_sep .. path .. '$')
+  if not prefix then
+    return nil
+  end
+
+  local last_folder = prefix:match('[^' .. pattern_sep .. ']+$')
+  return last_folder .. sep .. path
 end
 
 M.truncate_tabline = function(items, center, columns)
@@ -403,7 +462,7 @@ M.truncate_tabline = function(items, center, columns)
   return (trunc_left and '%#DartVisibleLabel# < ' or '')
     .. table.concat(
       vim.tbl_map(function(n)
-        return M.format_tabline_item(n)
+        return M.config.tabline.format_item(n)
       end, result),
       ''
     )
@@ -434,8 +493,10 @@ M.mark = function(bufnr, mark)
   else
     return -- skip sort if no change
   end
+
+  local order = M.config.tabline.order(M.config)
   table.sort(M.state, function(a, b)
-    return (M.order[a.mark] or 998) < (M.order[b.mark] or 999)
+    return (order[a.mark] or 998) < (order[b.mark] or 999)
   end)
 
   M.emit_change()
@@ -476,7 +537,8 @@ Dart.pick = function()
       Dart.jump(mark.mark)
     end, { buffer = buf, nowait = true, silent = true })
 
-    local entry = string.format('  %s → %s', mark.mark, vim.fn.fnamemodify(mark.filename, ':t'))
+    local path = vim.fn.fnamemodify(mark.filename, M.config.picker.path_format)
+    local entry = string.format('  %s → %s', mark.mark, path)
     if #entry > row_len then
       row_len = #entry
     end
@@ -532,6 +594,8 @@ Dart.gen_tabline = function()
       M.del_by_filename(m.filename)
     end
   end
+
+  items = M.expand_paths(items)
 
   local truncated = M.truncate_tabline(items, center, vim.o.columns)
   return truncated .. '%X%#DartFill#' .. M.gen_tabpage()
