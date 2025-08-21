@@ -18,32 +18,38 @@ Dart.setup = function(config)
 end
 
 M.config = {
-  -- list of characters to use to mark 'pinned' buffers
-  -- the characters will be chosen for new pins in order
+  -- List of characters to use to mark 'pinned' buffers
+  -- The characters will be chosen for new pins in order
   marklist = { 'a', 's', 'd', 'f', 'q', 'w', 'e', 'r' },
 
-  -- list of characters to use to mark recent buffers
-  -- we track the last #buflist opened buffers to display on the left side of the tabline
+  -- List of characters to use to mark recent buffers, which are displayed first (left) in the tabline
+  -- Buffers that are 'marked' are not included in this list
+  -- The length of this list determines how many recent buffers are tracked
+  -- Set to {} to disable recent buffers in the tabline
   buflist = { 'z', 'x', 'c' },
 
-  -- If true, Dart.next and Dart.prev will wrap around the tabline
-  cycle_wraps_around = true,
+  tabline = {
+    -- Force the tabline to always be shown, even if no files are currently marked
+    always_show = true,
 
-  -- state persist. use Dart.read_session and Dart.write_session manually
+    -- If true, Dart.next and Dart.prev will wrap around the tabline
+    cycle_wraps_around = true,
+  },
+
+  -- State persistence. Use Dart.read_session and Dart.write_session manually
   persist = {
-    -- data path to persist session data
+    -- Path to persist session data in
     path = vim.fs.joinpath(vim.fn.stdpath('data'), 'dart'),
   },
 
-  -- Force the tabline to always be shown, even if no files are currently marked
-  always_show_tabline = true,
-
+  -- Default mappings
+  -- Set an individual mapping to an empty string to disable,
   mappings = {
-    mark = ';;',
-    jump = ';',
-    pick = ';p',
-    next = '<S-l>',
-    prev = '<S-h>',
+    mark = ';;', -- Mark current buffer
+    jump = ';', -- Jump to buffer marked by next character i.e `;a`
+    pick = ';p', -- Open Dart.pick
+    next = '<S-l>', -- Cycle right through the tabline
+    prev = '<S-h>', -- Cycle left through the tabline
   },
 }
 
@@ -313,7 +319,7 @@ M.cycle_tabline = function(direction)
   end
 end
 
-local emit_change = function()
+M.emit_change = function()
   vim.api.nvim_exec_autocmds('User', { pattern = 'DartChanged' })
 end
 
@@ -432,7 +438,7 @@ M.mark = function(bufnr, mark)
     return (M.order[a.mark] or 998) < (M.order[b.mark] or 999)
   end)
 
-  emit_change()
+  M.emit_change()
 end
 
 Dart.state = function()
