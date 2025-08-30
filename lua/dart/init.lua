@@ -16,7 +16,6 @@ Dart.setup = function(config)
   M.create_default_hl()
   M.draw_tabline()
 
-
   if #M.config.buflist > 0 then
     local initial_bufs = {}
     -- get buffers
@@ -31,7 +30,6 @@ Dart.setup = function(config)
       M.shift_buflist(initial_bufs[i])
     end
   end
-
 
   M._setup = true
 end
