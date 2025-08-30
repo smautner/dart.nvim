@@ -16,6 +16,23 @@ Dart.setup = function(config)
   M.create_default_hl()
   M.draw_tabline()
 
+
+  if #M.config.buflist > 0 then
+    local initial_bufs = {}
+    -- get buffers
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+      local filename = vim.api.nvim_buf_get_name(bufnr)
+      if M.should_show(filename) and not M.state_from_filename(filename) then
+        table.insert(initial_bufs, filename)
+      end
+    end
+    -- add...
+    for i = #initial_bufs, 1, -1 do
+      M.shift_buflist(initial_bufs[i])
+    end
+  end
+
+
   M._setup = true
 end
 
